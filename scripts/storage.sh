@@ -378,7 +378,7 @@ if [ "${MAYASTOR_ENABLED}" = "true" ]; then
   done
 
   # Apply taints to storage nodes if configured (dedicate nodes for storage only)
-  MAYASTOR_TAINT=$(grep -A6 "^[[:space:]]*mayastor:" /vagrant/settings.yaml | grep "taint:" | awk '{print $2}' | tr -d '\r' | tr '[:upper:]' '[:lower:]')
+  MAYASTOR_TAINT=$(grep -A10 "^[[:space:]]*mayastor:" /vagrant/settings.yaml | grep "taint:" | awk '{print $2}' | tr -d '\r' | tr '[:upper:]' '[:lower:]')
   if [ "${MAYASTOR_TAINT}" = "true" ]; then
     echo "Applying taints to dedicate storage nodes for Mayastor only..."
     for node in $(sudo -i -u vagrant kubectl get nodes --no-headers | grep "storage0" | awk '{print $1}'); do
