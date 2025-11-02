@@ -4,7 +4,8 @@ configs/
 containerd-cache/
 storage-reports/
 
-# OpenEBS Mayastor storage VDI files (large binary disk images)
+# OpenEBS Mayastor storage disk files (large binary disk images)
+*.vmdk
 *.vdi
 
 # Log files (if you are creating logs in debug mode, uncomment this)

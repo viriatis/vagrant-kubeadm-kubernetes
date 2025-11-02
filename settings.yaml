@@ -72,6 +72,7 @@ nodes:
     memory: 4096 # 2GB for HugePages + 2GB for OS/pods (4GB minimum, always leave mininum 2GB for OS and calico)
     disk: 50    # OS disk size in GB
     storage_disk: 100 # Additional disk size in GB for Mayastor storage pools
+    storage_controller: "virtio-scsi"  # Storage disk controller: "sata" or "virtio-scsi" (20-30% faster)
     taint: true # Taint nodes to dedicate them for storage only (storage=mayastor:NoSchedule)
     hugepages_gb: 2  # HugePages REQUIRED for Mayastor (2GB minimum, uses 2MB pages)
 # Mount additional shared folders from the host into each virtual machine.
@@ -91,9 +92,9 @@ software:
   storage:
     # Longhorn - Distributed block storage (simple, lightweight)
     longhorn:
-      enabled: true
+      enabled: false
       version: 1.10.0      # Longhorn version (1.7.0+)
-      set_default: true   # Set as default storage class (only one can be default)
+      set_default: false   # Set as default storage class (only one can be default)
 
       # Storage Engine Selection (v1 vs v2)
       # v1: iSCSI-based (stable, production-ready)
@@ -119,8 +120,8 @@ software:
         # Built in Rust for maximum performance and safety
         # Requires: 3+ dedicated storage nodes with HugePages (2GB per node)
         mayastor:
-          enabled: false
-          set_default: false   # Set as default storage class (only one can be default)
+          enabled: true
+          set_default: true   # Set as default storage class (only one can be default)
           replicas: 3          # Number of replicas per volume (3-way replication recommended)
           # Best for: Performance-critical production workloads, databases, high IOPS
 

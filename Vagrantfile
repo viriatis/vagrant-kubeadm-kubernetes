@@ -196,9 +196,11 @@ Vagrant.configure("2") do |config|
             vb.customize ["modifyvm", :id, "--paravirtprovider", "kvm"]
           end
 
-          # Storage controller configuration for additional Mayastor disk (from global settings)
-          if VBOX_STORAGE_CONTROLLER == "virtio-scsi"
-            # Create VirtIO-SCSI controller for Mayastor storage disk
+          # Storage controller configuration for additional Mayastor disk
+          # Uses nodes.mayastor.storage_controller setting (defaults to "sata")
+          mayastor_storage_controller = settings["nodes"]["mayastor"]["storage_controller"] || "sata"
+          if mayastor_storage_controller == "virtio-scsi"
+            # Create VirtIO-SCSI controller for Mayastor storage disk (20-30% faster)
             controller_name = "VirtIO SCSI"
             unless `VBoxManage showvminfo #{File.basename(Dir.pwd)}_storage0#{i}_* 2>&1`.include?(controller_name)
               vb.customize ["storagectl", :id, "--name", controller_name, "--add", "virtio-scsi", "--controller", "VirtIO-SCSI", "--portcount", 2, "--bootable", "on"]
@@ -211,17 +213,18 @@ Vagrant.configure("2") do |config|
           # Additional disk for Mayastor storage pool
           disk_size = settings["nodes"]["mayastor"]["storage_disk"] * 1024  # Convert GB to MB
           # Disk file will be stored in the VM folder (controlled by vm_folder setting)
+          # Using VMDK format for consistency with OS disks (better for testing and portability)
           if VBOX_VM_FOLDER
             # Use the configured VM folder
-            disk_file = File.join(VBOX_VM_FOLDER, "vagrant-kubeadm-kubernetes", "storage0#{i}-disk.vdi")
+            disk_file = File.join(VBOX_VM_FOLDER, "vagrant-kubeadm-kubernetes", "storage0#{i}-disk.vmdk")
           else
             # Fallback to project directory if vm_folder not set
-            disk_file = "./storage0#{i}-disk.vdi"
+            disk_file = "./storage0#{i}-disk.vmdk"
           end
           vb.customize ["modifyvm", :id, "--boot1", "disk"]
 
           unless File.exist?(disk_file)
-            vb.customize ["createhd", "--filename", disk_file, "--size", disk_size]
+            vb.customize ["createhd", "--filename", disk_file, "--size", disk_size, "--format", "VMDK"]
 
             # Apply disk optimizations (from global settings)
             if VBOX_OPTIMIZE
